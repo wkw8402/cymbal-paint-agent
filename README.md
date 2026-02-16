@@ -1,80 +1,247 @@
 # Cymbal Paint Agent
 
-The Cymbal Paint Agent is an AI-powered assistant designed to help customers of Cymbal Shops navigate their paint product catalog, select colors, calculate required paint quantities based on room dimensions, and provide pricing estimates.
+![paint](https://github.com/user-attachments/assets/dd0754fc-28c6-45aa-ae11-74b8ea39b214)
 
-This project demonstrates the use of **Google Cloud's Agent Development Kit (ADK)** to build, test, and deploy a multi-agent system grounded in enterprise data.
+## Multi-Agent System Built with Google ADK + Vertex AI Search + Agent Engine
 
-## Features
+An end-to-end multi-agent AI assistant built and deployed on Google Cloud using the **Agent Development Kit (ADK)**.
 
--   **Multi-Agent Architecture**: Orchestrates specialized agents for specific tasks:
-    -   **Root Agent**: Manages the overall conversation flow.
-    -   **Search Agent**: Retrieves product information using **Vertex AI Search** (RAG).
-    -   **Room Planner Agent**: Collects room dimensions to calculate paint coverage.
-    -   **Coverage Agent**: Performs the specific mathematical calculations for paint needs.
--   **Retrieval-Augmented Generation (RAG)**: Grounds responses in real product datasheets using Vertex AI Search.
--   **State Management**: maintains context across the conversation (e.g., selected paint, room dimensions) to provide accurate final estimates.
--   **Chainlit UI**: A modern, chat-based web interface for users to interact with the deployed agent.
+This system simulates an enterprise retail workflow for Cymbal Shops' Paint Department — helping customers:
 
-## Demos
+- Discover paint products grounded in real datasheets  
+- Select product lines and colors  
+- Calculate paint quantity based on room geometry  
+- Estimate final cost with multi-room, multi-coat support  
 
-### 1. Final Deployed Agent
-This video demonstrates the fully deployed agent running on **Vertex AI Agent Engine** and accessed via a **Chainlit** web application. The agent helps a user select paint, choose colors, and calculate costs for multiple rooms.
+The agent is fully deployed to **Vertex AI Agent Engine** and accessed through a **Chainlit web frontend**.
 
-[![**🎥 Watch the Final Demo](https://img.youtube.com/vi/70m5CDpOnnw/hqdefault.jpg)](https://youtu.be/70m5CDpOnnw)
-
-### 2. Development & State Management
-This earlier demo shows the agent running locally during development. It highlights the agent's ability to maintain session state and debug context.
-
-[![**🎥 Watch the Dev UI](https://img.youtube.com/vi/EFrXVBLe5Xs/hqdefault.jpg)](https://youtu.be/EFrXVBLe5Xs)
+---
 
 ## Architecture
 
-This project is built using:
+### Multi-Agent Design
 
--   **Runtime**: Python 3.x
--   **Framework**: [Google Cloud Agent Development Kit (ADK)](https://github.com/GoogleCloudPlatform/agent-development-kit)
--   **LLM**: Gemini Pro (via Vertex AI)
--   **Vector Search**: Vertex AI Search & Conversation
--   **Frontend**: [Chainlit](https://chainlit.io/)
+| Component | Responsibility |
+|------------|----------------|
+| **Root Agent (`product_selector`)** | Conversation orchestration and tool routing |
+| **Search Agent** | Retrieval via `VertexAiSearchTool` (RAG) |
+| **Room Planner Agent** | Structured collection of room metadata |
+| **Coverage Calculator Agent** | Paint volume and pricing computation |
 
-### Directory Structure
+To comply with ADK tool constraints, the search agent is wrapped using `AgentTool(...)`, isolating search functionality while enabling other tools within the root agent.
 
--   `paint_agent/`: Contains the agent logic, tools, and sub-agent definitions.
--   `chainlit_ui/`: Contains the frontend application code connecting to the deployed agent.
--   `requirements.txt`: Python dependencies.
+---
 
-## Setup & Usage
+### System Flow
+
+1. User requests paint information.
+2. Root agent invokes Search Agent via `AgentTool`.
+3. Search Agent retrieves grounded data from Vertex AI Search.
+4. Selected paint metadata is stored in session state.
+5. Room planner collects geometry and constraints.
+6. Coverage agent computes required paint volume and total price.
+
+---
+
+## Key Technical Features
+
+### Retrieval-Augmented Generation (RAG)
+- Grounded responses from enterprise PDF datasheets
+- Structured retrieval of price and coverage rate
+
+### Session State Management
+Persistent conversational state across turns:
+- `SELECTED_PAINT`
+- `COVERAGE_RATE`
+- `PRICE`
+- Room dimensions
+- Coat count
+
+### Tool Composition
+- Resolved ADK multi-tool constraint using `AgentTool`
+- Clean separation between retrieval logic and orchestration logic
+
+### Cloud Deployment
+- Deployed to Vertex AI Agent Engine
+- IAM configuration for:
+  - Vertex AI User
+  - Discovery Engine User
+
+---
+
+## Demo
+
+### Deployed Agent Engine + Chainlit Frontend
+Click the thumbnail to play:
+
+[![Watch Final Demo](https://img.youtube.com/vi/70m5CDpOnnw/hqdefault.jpg)](https://youtu.be/70m5CDpOnnw)
+
+---
+
+### Local Dev UI (State + Tooling working)
+Click the thumbnail to play:
+
+[![Watch Dev Demo](https://img.youtube.com/vi/EFrXVBLe5Xs/hqdefault.jpg)](https://youtu.be/EFrXVBLe5Xs)
+
+---
+
+## Tech Stack
+
+- **Language:** Python 3.10+
+- **Framework:** Google Agent Development Kit (ADK)
+- **LLM:** Gemini (Vertex AI)
+- **Retrieval:** Vertex AI Search (Discovery Engine)
+- **Deployment:** Vertex AI Agent Engine
+- **Frontend:** Chainlit
+
+---
+
+## Repository Structure
+
+```
+
+cymbal-paint-agent/
+├── paint_agent/
+│   ├── agent.py
+│   ├── tools.py
+│   ├── callback_logging.py
+│   └── sub_agents/
+│       ├── search_agent/
+│       │   └── agent.py
+│       └── room_planner/
+│           ├── agent.py
+│           └── sub_agents/
+│               └── coverage_calculator/
+│                   ├── agent.py
+│                   └── tools.py
+├── chainlit_ui/
+│   ├── app.py
+│   └── public/
+│       ├── swatches.svg
+│       └── theme.json
+├── requirements.txt
+└── README.md
+
+````
+
+---
+
+## Setup
 
 ### Prerequisites
--   Google Cloud Project with Vertex AI API enabled.
--   Python 3.8+ installed.
+
+Before running this project, the following Google Cloud resources must be provisioned:
+
+- Vertex AI enabled
+- Discovery Engine Data Store (Layout Parser + table annotation)
+- Search App connected to the Data Store
+- Indexed paint datasheet (PDF) for grounding
+- IAM roles granted to Vertex AI Reasoning Engine Service Agent:
+  - Vertex AI User
+  - Discovery Engine User
+
+Local requirements:
+
+- Python 3.10+
+- Google Cloud CLI authenticated
+- `google-adk` installed
+
+---
 
 ### Installation
 
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/your-username/cymbal-paint-agent.git
-    cd cymbal-paint-agent
-    ```
+```bash
+git clone https://github.com/your-username/cymbal-paint-agent.git
+cd cymbal-paint-agent
 
-2.  Install dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
+python -m venv venv
+source venv/bin/activate  # Mac/Linux
+# venv\Scripts\activate   # Windows
 
-3.  Configure environment variables:
-    Create a `.env` file in `chainlit_ui/` and `paint_agent/` with your Google Cloud details:
-    ```env
-    GOOGLE_CLOUD_PROJECT=your-project-id
-    GOOGLE_CLOUD_LOCATION=us-central1
-    MODEL=gemini-1.5-pro-001
-    # ... other specific agent config
-    ```
+pip install -r requirements.txt
+````
 
-### Running the App
-To run the Chainlit UI locally:
+---
+
+### Environment Configuration
+
+Create a `.env` file:
+
+* `paint_agent/.env`
+
+```env
+GOOGLE_GENAI_USE_VERTEXAI=TRUE
+GOOGLE_CLOUD_PROJECT=your-project-id
+GOOGLE_CLOUD_LOCATION=us-central1
+MODEL=gemini-2.0-flash
+SEARCH_ENGINE_ID=your-search-engine-id
+```
+
+Authenticate:
+
+```bash
+gcloud auth application-default login
+gcloud config set project your-project-id
+```
+
+---
+
+## Local Development
+
+### Run via CLI
+
+```bash
+adk run paint_agent
+```
+
+### Run Dev Web UI
+
+```bash
+adk web
+```
+
+---
+
+## Deployment
+
+Deploy to Vertex AI Agent Engine:
+
+```bash
+adk deploy agent_engine paint_agent \
+  --display_name "Paint Agent" \
+  --staging_bucket gs://your-staging-bucket
+```
+
+Grant required IAM roles to the **Vertex AI Reasoning Engine Service Agent**:
+
+* Vertex AI User
+* Discovery Engine User
+
+---
+
+## Run Frontend Against Deployed Agent
+
+Update `chainlit_ui/app.py`:
+
+```python
+agent = agent_engines.get("projects/PROJECT_ID/locations/us-central1/reasoningEngines/ENGINE_ID")
+```
+
+Then run:
 
 ```bash
 cd chainlit_ui
 chainlit run app.py
 ```
+
+Visit:
+
+```
+http://localhost:8000
+```
+
+---
+
+## License
+
+MIT
