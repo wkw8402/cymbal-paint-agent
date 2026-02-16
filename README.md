@@ -20,12 +20,12 @@ This project demonstrates the use of **Google Cloud's Agent Development Kit (ADK
 ### 1. Final Deployed Agent
 This video demonstrates the fully deployed agent running on **Vertex AI Agent Engine** and accessed via a **Chainlit** web application. The agent helps a user select paint, choose colors, and calculate costs for multiple rooms.
 
-[**🎥 Watch the Final Demo (task6.mov)**](task6.mov)
+[![**🎥 Watch the Final Demo](https://img.youtube.com/vi/70m5CDpOnnw/hqdefault.jpg)](https://youtu.be/70m5CDpOnnw)
 
 ### 2. Development & State Management
 This earlier demo shows the agent running locally during development. It highlights the agent's ability to maintain session state and debug context.
 
-[**🎥 Watch the Dev Demo (task4.mov)**](task4.mov)
+[![**🎥 Watch the Dev UI](https://img.youtube.com/vi/EFrXVBLe5Xs/hqdefault.jpg)](https://youtu.be/EFrXVBLe5Xs)
 
 ## Architecture
 
